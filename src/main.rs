@@ -38,7 +38,7 @@ fn is_sum_of_2_abundant(x: u64, list: &Vec<u64>, hash: &HashMap<u64, u64>) -> bo
 }
 
 fn main() {
-    let mut abundant_numbers_hash = HashMap::new();;
+    let mut abundant_numbers_hash = HashMap::new();
     let mut abundant_numbers_list = Vec::new();
 
     for i in 12..28124 {
