@@ -1,7 +1,6 @@
 // https://projecteuler.net/problem=23
 
 use std::collections::HashMap;
-use std::hash::Hash;
 
 fn sum_of_divisors(x: u64) -> u64 {
     let mut divisor_sum = 0;
@@ -28,7 +27,7 @@ fn is_sum_of_2_abundant(x: u64, list: &Vec<u64>, hash: &HashMap<u64, u64>) -> bo
         }
 
         let diff = x - left;
-        
+
         if hash.contains_key(&diff) {
             return true
         }
@@ -57,5 +56,6 @@ fn main() {
         }
     }
 
+    // Returns 4179595, wrong answer :(
     println!("sum: {}", sum);
 }
