@@ -26,8 +26,8 @@ async fn run() -> Result<(), DbErr> {
     let db = Database::connect(DATABASE_URL).await?;
 
     let filters = vec![
-        DynamicFilter::new("Colonne1", "like", "2"),
-        DynamicFilter::new("Colonne2", "like", "3"),
+        DynamicFilter::new("Colonne1", "contains", "2"),
+        DynamicFilter::new("Colonne2", "contains", "3"),
     ];
 
     let entities = apply_filters::<Entity>(filters, &db).await?;
