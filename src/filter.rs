@@ -35,20 +35,16 @@ impl DynamicFilter {
             })?;
 
         match self.operator.as_str() {
-            "eq" => Ok(query.filter(column.eq(self.value))),
-            "neq" => Ok(query.filter(column.ne(self.value))),
-            "gt" => Ok(query.filter(column.gt(self.value))),
-            "gte" => Ok(query.filter(column.gte(self.value))),
-            "lt" => Ok(query.filter(column.lt(self.value))),
-            "lte" => Ok(query.filter(column.lte(self.value))),
-            "like" => Ok(query.filter(column.contains(&self.value))),
-            "in" => {
-                let values: Vec<&str> = self.value.split(',').collect();
-                Ok(query.filter(column.is_in(values)))
-            }
+            "equals" => Ok(query.filter(column.eq(self.value))),
+            "notEquals" => Ok(query.filter(column.ne(self.value))),
+            "contains" => Ok(query.filter(column.contains(self.value))),
+            "notContains" => Ok(query.filter(column.contains(self.value).not())),
+            "startsWith" => Ok(query.filter(column.starts_with(self.value))),
+            "endsWith" => Ok(query.filter(column.ends_with(self.value))),
+            "blank" => Ok(query.filter(column.is_null())),
+            "notBlank" => Ok(query.filter(column.is_not_null())),
             _ => Err(DbErr::Custom(format!(
-                "Opérateur non supporté: {}. Les opérateurs supportés sont: \
-                 eq, neq, gt, gte, lt, lte, like, in",
+                "Opérateur non supporté: {}.",
                 self.operator
             ))),
         }
