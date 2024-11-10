@@ -1,61 +1,45 @@
-// https://projecteuler.net/problem=23
+use sea_orm::{DbConn, EntityTrait};
+mod entities;
+mod filter;
 
-use std::collections::HashMap;
+use futures::executor::block_on;
+use sea_orm::{Database, DbErr};
+use entities::{prelude::*};
+use crate::filter::DynamicFilter;
 
-fn sum_of_divisors(x: u64) -> u64 {
-    let mut divisor_sum = 0;
+const DATABASE_URL: &str = "postgres://rust:rust@localhost:5432/rust";
 
-    for i in 1..x {
-        if x % i == 0 {
-            divisor_sum += i;
-        }
+pub async fn apply_filters<E: EntityTrait>(
+    filters: Vec<DynamicFilter>,
+    db: &DbConn,
+) -> Result<Vec<E::Model>, DbErr> {
+    let mut query = E::find();
+
+    for filter in filters {
+        query = filter.apply_to_query(query)?;
     }
 
-    divisor_sum
+    query.all(db).await
 }
 
-fn is_abundant(x: u64) -> bool {
-    sum_of_divisors(x) > x
-}
+async fn run() -> Result<(), DbErr> {
+    let db = Database::connect(DATABASE_URL).await?;
 
-fn is_sum_of_2_abundant(x: u64, list: &Vec<u64>, hash: &HashMap<u64, u64>) -> bool {
-    for left_index in 0..list.len() {
-        let left = list[left_index];
+    let filters = vec![
+        DynamicFilter::new("Colonne1", "like", "2"),
+        DynamicFilter::new("Colonne2", "like", "3"),
+    ];
 
-        if left > x {
-            break
-        }
+    let entities = apply_filters::<Entity>(filters, &db).await?;
 
-        let diff = x - left;
-
-        if hash.contains_key(&diff) {
-            return true
-        }
-    }
-
-    false
+    println!("{:?}", entities);
+    Ok(())
 }
 
 fn main() {
-    let mut abundant_numbers_hash = HashMap::new();
-    let mut abundant_numbers_list = Vec::new();
-
-    for i in 12..28124 {
-        if is_abundant(i) {
-            abundant_numbers_list.push(i);
-            abundant_numbers_hash.insert(i, i);
-        }
+    if let Err(err) = block_on(run()) {
+        panic!("{}", err);
     }
 
-    let mut sum = 0;
-
-    for i in 24..28124 {
-        if !is_sum_of_2_abundant(i, &abundant_numbers_list, &abundant_numbers_hash) {
-            println!("{} is not a sum", i);
-            sum += i;
-        }
-    }
-
-    // Returns 4179595, wrong answer :(
-    println!("sum: {}", sum);
+    println!("Done!");
 }
