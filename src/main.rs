@@ -21,7 +21,7 @@ async fn run() -> Result<(), DbErr> {
         global_search: "".to_string(),
     };
 
-    let entities = Query::apply_filters::<Entity>(&query, &global_searchable, &db).await?;
+    let entities = query.apply_filters::<Entity>(&global_searchable, &db).await?;
 
     println!("{:?}", entities);
     println!("Done :)");
