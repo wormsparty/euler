@@ -1,6 +1,6 @@
 use std::collections::HashMap;
 use std::string::String;
-use sea_orm::{ColumnTrait, DbConn, Order, QueryFilter, QueryOrder, QuerySelect};
+use sea_orm::{ColumnTrait, Order, QueryFilter, QueryOrder, QuerySelect, Select};
 use sea_orm::{DbErr, EntityTrait};
 use serde::Deserialize;
 use crate::entities::entity::Column;
@@ -34,11 +34,11 @@ pub struct Query {
 impl Query {
     pub async fn apply_filters<E: EntityTrait>(
         &self,
-        global_searchable_fields: &Vec<&str>,
+        qs: Select<E>,
+        global_searchable_fields: &Vec<Column>,
         column_map: &HashMap<&str, Column>,
-        db: &DbConn,
-    ) -> Result<Vec<E::Model>, DbErr> {
-        let mut qs = E::find();
+    ) -> Result<Select<E>, DbErr> {
+        let mut qs = qs;
 
         // Filter by each field
         for (name, filter) in &self.filter {
@@ -68,8 +68,7 @@ impl Query {
         if !self.global_search.is_empty() {
             // This seems to be safe from injection as the builder replaces spaces with underscores
             for field in global_searchable_fields {
-                let column= column_map.get(field).unwrap();
-                qs = qs.filter(column.contains(&self.global_search));
+                qs = qs.filter(field.contains(&self.global_search));
             }
         }
 
@@ -78,12 +77,12 @@ impl Query {
             let sort = &self.sort.first().unwrap();
             let column= column_map.get(sort.col_id.as_str()).unwrap();
 
-            qs = qs.order_by(column.clone(), if sort.sort.to_lowercase() == "asc" { Order::Asc } else { Order::Desc });
+            qs = qs.order_by(*column, if sort.sort.to_lowercase() == "asc" { Order::Asc } else { Order::Desc });
         }
 
         // Paging
         qs = qs.offset(self.start).limit(self.end - self.start);
 
-        qs.all(db).await
+        Ok(qs)
     }
 }
