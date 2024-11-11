@@ -6,7 +6,7 @@ use futures::executor::block_on;
 use sea_orm::{Database, DbErr, EntityTrait};
 use entities::{prelude::*};
 use crate::entities::entity;
-use crate::filter::{Query};
+use crate::filter::{FilterQuery};
 
 const DATABASE_URL: &str = "postgres://rust:rust@localhost:5432/rust";
 
@@ -23,7 +23,7 @@ async fn run() -> Result<(), DbErr> {
         ("colonne_2", entity::Column::Colonne2),
     ]);
 
-    let query = Query {
+    let query = FilterQuery {
         start: 0,
         end: 100,
         filter: HashMap::new(),

@@ -13,7 +13,7 @@ pub struct Sort {
 }
 
 #[derive(Deserialize)]
-pub struct Filter {
+pub struct FieldFilter {
     #[serde(rename = "filterType")]
     pub filter_type: String,
     #[serde(rename = "type")]
@@ -22,16 +22,16 @@ pub struct Filter {
 }
 
 #[derive(Deserialize)]
-pub struct Query {
+pub struct FilterQuery {
     pub start: u64,
     pub end: u64,
-    pub filter: HashMap<String, Filter>,
+    pub filter: HashMap<String, FieldFilter>,
     pub sort: Vec<Sort>,
     #[serde(rename = "globalSearch")]
     pub global_search: String,
 }
 
-impl Query {
+impl FilterQuery {
     pub async fn apply_filters<E: EntityTrait>(
         &self,
         qs: Select<E>,
