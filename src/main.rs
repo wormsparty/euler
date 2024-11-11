@@ -1,38 +1,31 @@
-use sea_orm::{DbConn, EntityTrait};
+use std::collections::HashMap;
 mod entities;
 mod filter;
 
 use futures::executor::block_on;
 use sea_orm::{Database, DbErr};
 use entities::{prelude::*};
-use crate::filter::DynamicFilter;
+use crate::filter::{Query};
 
 const DATABASE_URL: &str = "postgres://rust:rust@localhost:5432/rust";
 
-pub async fn apply_filters<E: EntityTrait>(
-    filters: Vec<DynamicFilter>,
-    db: &DbConn,
-) -> Result<Vec<E::Model>, DbErr> {
-    let mut query = E::find();
-
-    for filter in filters {
-        query = filter.apply_to_query(query)?;
-    }
-
-    query.all(db).await
-}
-
 async fn run() -> Result<(), DbErr> {
     let db = Database::connect(DATABASE_URL).await?;
+    let global_searchable = vec!["colonne_1", "colonne_2"];
 
-    let filters = vec![
-        DynamicFilter::new("Colonne1", "contains", "2"),
-        DynamicFilter::new("Colonne2", "contains", "3"),
-    ];
+    let query = Query {
+        start: 0,
+        end: 100,
+        filter: HashMap::new(),
+        sort: Vec::new(),
+        global_search: "".to_string(),
+    };
 
-    let entities = apply_filters::<Entity>(filters, &db).await?;
+    let entities = Query::apply_filters::<Entity>(&query, &global_searchable, &db).await?;
 
     println!("{:?}", entities);
+    println!("Done :)");
+
     Ok(())
 }
 
